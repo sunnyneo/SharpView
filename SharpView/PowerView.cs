@@ -9223,6 +9223,7 @@ namespace SharpView
             {
                 if ((TargetPath.IsRegexMatch(@"\\\\.*\\.*")) && (args.Credential != null))
                 {
+
                     var HostComputer = new System.Uri(TargetPath).Host;
                     if (!MappedComputers[HostComputer])
                     {
@@ -9268,14 +9269,50 @@ namespace SharpView
                     }
                     if (Continue)
                     {
+
+                        String owner;
+                        try
+                        {
+                             owner = File.GetAccessControl(file).GetOwner(typeof(SecurityIdentifier)).Translate(typeof(System.Security.Principal.NTAccount)).Value;
+                        }
+                        catch{
+                             owner = "Access was Denied"; 
+                        }
+
+                        DateTime lastAccessTime;
+                        try
+                        {
+                            lastAccessTime = File.GetLastAccessTime(file);
+                        }
+                        catch { lastAccessTime = new DateTime(); }
+
+                        DateTime lastWriteTime;
+                        try
+                        {
+                            lastWriteTime = File.GetLastWriteTime(file);
+                        } catch { lastWriteTime = new DateTime(); }
+
+                        DateTime creationTime;
+                        try
+                        {
+                            creationTime = File.GetCreationTime(file);
+                        } catch { creationTime = new DateTime(); }
+
+                        long length;
+                        try
+                        {
+                            length =new FileInfo(file).Length; 
+                        }catch { length = 0; }
+                      
+
                         var FoundFile = new FoundFile
                         {
                             Path = file,
-                            Owner = File.GetAccessControl(file).GetOwner(typeof(SecurityIdentifier)).Translate(typeof(System.Security.Principal.NTAccount)).Value,
-                            LastAccessTime = File.GetLastAccessTime(file),
-                            LastWriteTime = File.GetLastWriteTime(file),
-                            CreationTime = File.GetCreationTime(file),
-                            Length = new FileInfo(file).Length
+                            Owner = owner,
+                            LastAccessTime = lastAccessTime,
+                            LastWriteTime = lastWriteTime,
+                            CreationTime = creationTime,
+                            Length = length
                         };
                         FoundFiles.Add(FoundFile);
                     }
